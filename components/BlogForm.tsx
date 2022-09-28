@@ -3,12 +3,10 @@ import { useRouter } from 'next/router';
 import { GlobalContext } from '../context';
 import { Blog, BlogBody } from '../types';
 
-const BlogForm = ({ editMode }: { editMode: boolean }) => {
+const BlogForm = ({ editMode }: { editMode?: boolean }) => {
   const { push, query } = useRouter();
   const { addBlog, editBlog, blogs } = useContext(GlobalContext);
-  const [blogData, setBlogData] = useState<Blog>();
-  const title = useRef<HTMLInputElement | null>(null);
-  const description = useRef<HTMLTextAreaElement | null>(null);
+  const [blogData, setBlogData] = useState<BlogBody>({ title: '', description: '' });
 
   useEffect(() => {
     if (editMode) {
@@ -19,16 +17,24 @@ const BlogForm = ({ editMode }: { editMode: boolean }) => {
     }
   }, [editMode]);
 
+  const titleChangeHandler = (e: any) => {
+    setBlogData((oldValue: BlogBody) => {
+      return { ...oldValue, title: e.target.value };
+    });
+  };
+
+  const descriptionChangeHandler = (e: any) => {
+    setBlogData((oldValue: BlogBody) => {
+      return { ...oldValue, description: e.target.value };
+    });
+  };
+
   const onSubmit = (e: any) => {
     e.preventDefault();
-    const blog: BlogBody = {
-      title: title?.current?.value || '',
-      description: description?.current?.value || ''
-    };
+    if (!blogData?.title || !blogData?.description)
+      return alert('Title and Description are required');
 
-    if (!blog.title || !blog.description) return alert('Title and Description are required');
-
-    editMode ? addBlog(blog) : editBlog(blog, query.blog?.toString() || '');
+    editMode ? editBlog(blogData, query.blog?.toString() || '') : addBlog(blogData);
     push('/');
   };
 
@@ -39,7 +45,7 @@ const BlogForm = ({ editMode }: { editMode: boolean }) => {
       <h2>{titleText} Blog</h2>
       <form onSubmit={onSubmit}>
         <input
-          ref={title}
+          onChange={titleChangeHandler}
           value={blogData?.title}
           placeholder="Enter blog title here.."
           className="text-input"
@@ -47,7 +53,7 @@ const BlogForm = ({ editMode }: { editMode: boolean }) => {
         />
         <br />
         <textarea
-          ref={description}
+          onChange={descriptionChangeHandler}
           value={blogData?.description}
           placeholder="Enter blog content here.."
           rows={3}

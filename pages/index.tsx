@@ -1,7 +1,19 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
+import { useContext, useEffect, useState } from 'react';
+import { GlobalContext } from '../context';
+import { Blog } from '../types';
 
 const Home: NextPage = () => {
+  const { blogs } = useContext(GlobalContext);
+
+  const [pageData, setPageData] = useState<Blog[]>([]);
+
+  useEffect(() => {
+    setPageData(() => blogs.reverse());
+  }, []);
+
   return (
     <div className="blogs-container">
       <Head>
@@ -12,27 +24,16 @@ const Home: NextPage = () => {
 
       <h2>All Blogs</h2>
       <div>
-        <div className="blog-container">
-          <p>
-            <b>Lorem ipsum dolor sit amet consectetur adipisicing elit.</b>
-          </p>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quaerat rem voluptatum ab
-            recusandae. Quis itaque quia ipsam impedit ad voluptates provident maiores praesentium
-            dolor doloribus hic, officia blanditiis doloremque! Assumenda?
-          </p>
-        </div>
-
-        <div className="blog-container">
-          <p>
-            <b>Lorem ipsum dolor sit amet consectetur adipisicing elit.</b>
-          </p>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quaerat rem voluptatum ab
-            recusandae. Quis itaque quia ipsam impedit ad voluptates provident maiores praesentium
-            dolor doloribus hic, officia blanditiis doloremque! Assumenda?
-          </p>
-        </div>
+        {pageData.map((blog, index) => (
+          <Link href={`/edit/${blog.slug}`} key={blog.slug}>
+            <div className="blog-container">
+              <div>
+                <b>{blog.title}</b>
+              </div>
+              <div>{blog.description}</div>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );

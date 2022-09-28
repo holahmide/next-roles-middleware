@@ -1,5 +1,6 @@
-import { createContext, ReactNode, useMemo, useState } from 'react';
+import { createContext, ReactNode, useCallback, useMemo, useState } from 'react';
 import { Blog, BlogBody } from '../types';
+import pathRoles from './roles';
 
 type GlobalContext = {
   roles: string[];
@@ -7,6 +8,7 @@ type GlobalContext = {
   updateRoles: (roles: string[]) => void;
   addBlog: (blogs: BlogBody) => void;
   editBlog: (blogs: BlogBody, slug: string) => void;
+  checkIfUserIsAllowed: (pathName: string) => boolean;
 };
 
 export const GlobalContext = createContext<GlobalContext>({
@@ -14,7 +16,8 @@ export const GlobalContext = createContext<GlobalContext>({
   blogs: [],
   updateRoles: () => null,
   addBlog: () => null,
-  editBlog: () => null
+  editBlog: () => null,
+  checkIfUserIsAllowed: () => true
 });
 
 export const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
@@ -46,8 +49,41 @@ export const GlobalContextProvider = ({ children }: { children: ReactNode }) => 
   const [roles, setRoles] = useState<string[]>(userRoles);
   const [blogs, setBlogs] = useState<Blog[]>(userBlogs);
 
+  const checkIfUserIsAllowed = useCallback(
+    (pathName: string) => {
+      // Split Current path name
+      const paths = pathName.split('/').filter((i: any) => i);
+      // get the paths that permission was set for
+      const pathRolesKeys = Object.keys(pathRoles);
+
+      let requiredRoles: string[] = [];
+      let allowed: boolean = true;
+
+      // join the paths with '-' and check if a path was set for it
+      // It checks recursively for all the path from the last till it finds one that is set
+      while (paths.length > 0 && requiredRoles.length === 0) {
+        const key: any = paths.join('-');
+        if (pathRolesKeys.includes(key)) requiredRoles = pathRoles[key];
+        else paths.pop();
+      }
+
+      // check if user has all the permissions
+      if (roles.includes('SUPER_ADMIN')) return true;
+      if (
+        requiredRoles.length > 0 &&
+        !requiredRoles.every((item: string) => roles.includes(item))
+      ) {
+        allowed = false;
+      }
+
+      return allowed;
+    },
+    [roles]
+  );
+
   return (
-    <GlobalContext.Provider value={{ roles, updateRoles, blogs, addBlog, editBlog }}>
+    <GlobalContext.Provider
+      value={{ roles, updateRoles, blogs, addBlog, editBlog, checkIfUserIsAllowed }}>
       {children}
     </GlobalContext.Provider>
   );
