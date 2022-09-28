@@ -15,6 +15,59 @@ a {
   box-sizing: border-box;
 }
 
+
+.roles-container {
+  text-align:center;
+  margin-bottom: 20px;
+}
+
+.nav-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.nav-container div {
+  margin: 0 7px;
+}
+
+.container {
+  padding: 20px;
+  text-align:center;
+}
+
+.blog-container {
+  text-align:left;
+  padding: 6px;
+  background-color: gray;
+  color: white;
+  border-radius: 7px;
+  margin: 15px 0px;
+}
+
+.blog-container p {
+  margin:3px;
+}
+
+.text-input {
+  min-width: 350px;
+  min-height: 30px;
+  padding: 4px;
+  margin: 4px 0;
+}
+
+.button {
+  width: 350px;
+  height: 30px;
+  background-color: blue;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
