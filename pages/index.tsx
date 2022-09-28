@@ -12,7 +12,7 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     setPageData(() => blogs.reverse());
-  }, []);
+  }, [blogs]);
 
   return (
     <div className="blogs-container">
