@@ -1,17 +1,8 @@
 import { createContext, ReactNode, useCallback, useMemo, useState } from 'react';
-import { Blog, BlogBody } from '../types';
+import type { Blog, BlogBody, GlobalContextProps, Roles } from '../types';
 import pathRoles from './roles';
 
-type GlobalContext = {
-  roles: string[];
-  blogs: Blog[];
-  updateRoles: (roles: string[]) => void;
-  addBlog: (blogs: BlogBody) => void;
-  editBlog: (blogs: BlogBody, slug: string) => void;
-  checkIfUserIsAllowed: (pathName: string) => boolean;
-};
-
-export const GlobalContext = createContext<GlobalContext>({
+export const GlobalContext = createContext<GlobalContextProps>({
   roles: [],
   blogs: [],
   updateRoles: () => null,
@@ -21,14 +12,14 @@ export const GlobalContext = createContext<GlobalContext>({
 });
 
 export const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
-  let userRoles: string[] = [];
+  let userRoles: Roles[] = [];
   let userBlogs: Blog[] = [];
   if (typeof window !== 'undefined') {
     userRoles = JSON.parse(localStorage.getItem('roles') || '[]');
     userBlogs = JSON.parse(localStorage.getItem('blogs') || '[]');
   }
 
-  const updateRoles = (roles: string[]) => {
+  const updateRoles = (roles: Roles[]) => {
     localStorage.setItem('roles', JSON.stringify(roles));
     setRoles(roles);
   };
@@ -46,18 +37,15 @@ export const GlobalContextProvider = ({ children }: { children: ReactNode }) => 
     setBlogs(blogs);
   };
 
-  const [roles, setRoles] = useState<string[]>(userRoles);
+  const [roles, setRoles] = useState<Roles[]>(userRoles);
   const [blogs, setBlogs] = useState<Blog[]>(userBlogs);
 
   const checkIfUserIsAllowed = useCallback(
-    (pathName: string) => {
-      // Split Current path name
-      const paths = pathName.split('/').filter((i: any) => i);
-      // get the paths that permission was set for
-      const pathRolesKeys = Object.keys(pathRoles);
-
-      let requiredRoles: string[] = [];
-      let allowed: boolean = true;
+    (pathname: string, userRoles: Roles[] = roles) => {
+      const paths = pathname.split('/').filter((i: any) => i); // Split Current path name
+      const pathRolesKeys = Object.keys(pathRoles); // get the paths that permission was set for
+      let requiredRoles: Roles[] = []; // initializes path required roles
+      let allowed: boolean = true; // makes the function return a default of true
 
       // join the paths with '-' and check if a path was set for it
       // It checks recursively for all the path from the last till it finds one that is set
@@ -67,14 +55,13 @@ export const GlobalContextProvider = ({ children }: { children: ReactNode }) => 
         else paths.pop();
       }
 
-      // check if user has all the permissions
-      if (roles.includes('SUPER_ADMIN')) return true;
+      //  check if user has all the permissions
+      if (userRoles.includes('SUPER_ADMIN')) return true;
       if (
         requiredRoles.length > 0 &&
-        !requiredRoles.every((item: string) => roles.includes(item))
-      ) {
+        !requiredRoles.every((item: Roles) => userRoles.includes(item))
+      )
         allowed = false;
-      }
 
       return allowed;
     },

@@ -11,7 +11,7 @@ const Roles = () => {
     const admin = formData.get('admin')?.toString() || '';
     const super_admin = formData.get('super_admin')?.toString() || '';
 
-    const roles: string[] = [editor, admin, super_admin].filter((i) => i) || [];
+    const roles: any = [editor, admin, super_admin].filter((i) => i) || [];
 
     updateRoles(roles);
   };
